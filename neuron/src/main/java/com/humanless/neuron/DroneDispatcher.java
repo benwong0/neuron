@@ -7,7 +7,7 @@ import java.util.ArrayList;
  * as well as maintaining the current states of the drone.
  */
 public class DroneDispatcher {
-    private ArrayList<DroneListener> listeners;
+    private ArrayList<DroneListener> listeners = new ArrayList<>();
     private DroneState droneState;
 
     /**
