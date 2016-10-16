@@ -3,5 +3,7 @@ package com.humanless.neuron.dji;
 /**
  * DJI drone events.
  */
-public class DjiDroneEvents {
+public enum DjiDroneEvents {
+    CONNECTED,
+    TOOK_OFF,
 }
