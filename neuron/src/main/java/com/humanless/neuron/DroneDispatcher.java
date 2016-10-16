@@ -8,7 +8,7 @@ import java.util.ArrayList;
  */
 public class DroneDispatcher {
     private ArrayList<DroneListener> listeners = new ArrayList<>();
-    private DroneState droneState;
+    private DroneStateManager droneStateManager;
 
     /**
      * Add listener to dispatcher.
@@ -29,21 +29,21 @@ public class DroneDispatcher {
     }
 
     /**
-     * Get the current drone state.
+     * Get the drone state manager.
      *
-     * @return The current drone state.
+     * @return The drone state manager.
      */
-    public DroneState getDroneState() {
-        return droneState;
+    public DroneStateManager getDroneStateManager() {
+        return droneStateManager;
     }
 
     /**
-     * Set the current drone state.
+     * Set the drone state manager.
      *
-     * @param droneState The drone state to set.
+     * @param droneStateManager The drone state manager to set.
      */
-    protected void setDroneState(DroneState droneState) {
-        this.droneState = droneState;
+    protected void setDroneStateManager(DroneStateManager droneStateManager) {
+        this.droneStateManager = droneStateManager;
     }
 
     /**
@@ -54,7 +54,7 @@ public class DroneDispatcher {
      */
     protected void dispatch(int event) {
         for (DroneListener listener : listeners) {
-            if (listener.isForEvent(event) && droneState.isInStates(listener.getStates())) {
+            if (listener.isForEvent(event) && droneStateManager.isInStates(listener.getStates())) {
                 listener.getCallback().run();
             }
         }

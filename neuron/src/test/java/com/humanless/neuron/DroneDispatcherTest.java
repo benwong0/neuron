@@ -20,7 +20,7 @@ public class DroneDispatcherTest {
     private DroneListener droneListener;
 
     @Mock
-    private DroneState droneState;
+    private DroneStateManager droneStateManager;
 
     @Test
     public void dispatch() {
@@ -33,29 +33,29 @@ public class DroneDispatcherTest {
             }
         };
 
-        dispatcher.setDroneState(droneState);
+        dispatcher.setDroneStateManager(droneStateManager);
         dispatcher.addListener(droneListener);
 
         when(droneListener.getCallback()).thenReturn(runnable);
 
         when(droneListener.isForEvent(event)).thenReturn(true);
-        when(droneState.isInStates(any(int[].class))).thenReturn(true);
+        when(droneStateManager.isInStates(any(int[].class))).thenReturn(true);
         dispatcher.dispatch(event);
         verify(droneListener, times(1)).getCallback();
         reset(droneListener);
 
         when(droneListener.isForEvent(event)).thenReturn(false);
-        when(droneState.isInStates(any(int[].class))).thenReturn(false);
+        when(droneStateManager.isInStates(any(int[].class))).thenReturn(false);
         dispatcher.dispatch(event);
         verify(droneListener, times(0)).getCallback();
 
         when(droneListener.isForEvent(event)).thenReturn(true);
-        when(droneState.isInStates(any(int[].class))).thenReturn(false);
+        when(droneStateManager.isInStates(any(int[].class))).thenReturn(false);
         dispatcher.dispatch(event);
         verify(droneListener, times(0)).getCallback();
 
         when(droneListener.isForEvent(event)).thenReturn(false);
-        when(droneState.isInStates(any(int[].class))).thenReturn(true);
+        when(droneStateManager.isInStates(any(int[].class))).thenReturn(true);
         dispatcher.dispatch(event);
         verify(droneListener, times(0)).getCallback();
     }

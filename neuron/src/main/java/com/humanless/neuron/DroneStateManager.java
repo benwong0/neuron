@@ -1,9 +1,10 @@
 package com.humanless.neuron;
 
 /**
- * Base drone state.
+ * Base drone state manager. Drone state manager is responsible for maintaining the current state
+ * of the drone.
  */
-public abstract class DroneState {
+public abstract class DroneStateManager {
     /**
      * Check if the drone satisfies the specified list of states.
      *
