@@ -3,7 +3,7 @@ package com.humanless.neuron.dji;
 /**
  * DJI drone states.
  */
-public enum DjiDroneStates {
+public enum DjiDroneState {
     RETURNING_HOME,
     BATTERY_LEVEL,
     HOME_LOCATION_LATITUDE,
