@@ -11,9 +11,10 @@ public class DjiDroneStateManager extends DroneStateManager {
      *
      * @param state The state to set.
      * @param value The value.
+     * @return true, if state is updated; otherwise, false.
      */
-    public void setState(DjiDroneState state, Object value) {
-        setState(state.ordinal(), value);
+    public boolean setState(DjiDroneState state, Object value) {
+        return setState(state.ordinal(), value);
     }
 
     /**
@@ -25,7 +26,6 @@ public class DjiDroneStateManager extends DroneStateManager {
     public Object getState(DjiDroneState state) {
         return getState(state.ordinal());
     }
-
 
     /**
      * Check if the drone currently matches the specified state.
