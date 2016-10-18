@@ -51,6 +51,8 @@ public class DjiDroneDispatcher extends DroneDispatcher {
 
                     dispatch(DjiDroneEvent.PRODUCT_CHANGE);
                     setupProductListener(product);
+                    setupAircraftStateListener(product);
+
                 }
             }
         };
