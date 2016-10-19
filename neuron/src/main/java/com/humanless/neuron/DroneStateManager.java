@@ -76,6 +76,30 @@ public class DroneStateManager<StateType> {
     }
 
     /**
+     * Check if the drone's specified state equals the value for at least the specified number of
+     * seconds.
+     *
+     * @param state        The state to check.
+     * @param value        The value the state should be in.
+     * @param milliseconds Minimum time since state changed to the specified value.
+     * @return true, if the drone's current state matches the specified state for specified
+     * duration; otherwise, false.
+     */
+    public boolean isInState(StateType state, Object value, long milliseconds) {
+        Date lastUpdate = updateTimes.get(state);
+        if (lastUpdate != null) {
+            long update = lastUpdate.getTime();
+            long now = new Date().getTime();
+            long timeDiff = now - update;
+
+            if (timeDiff > milliseconds) {
+                return isInState(state, value);
+            }
+        }
+        return false;
+    }
+
+    /**
      * Check if the drone satisfies the specified list of states.
      *
      * @param states The list of states to check.

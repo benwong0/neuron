@@ -77,8 +77,4 @@ public class DroneDispatcherTest {
         dispatcher.dispatch(event);
         verify(listener, times(0)).getCallback();
     }
-
-    public void addRemoveListener() {
-
-    }
 }

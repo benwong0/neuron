@@ -110,15 +110,15 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
 
                 // Take off/landing
                 boolean isFlying = djiFlightControllerCurrentState.isFlying();
-                if (!stateManager.isInState(DjiDroneState.FLYING, isFlying)) {
-                    if (isFlying) {
-                        // Took off
-                        dispatch(DjiDroneEvent.TAKE_OFF);
-                    } else {
-                        // Landed
-                        dispatch(DjiDroneEvent.LAND);
-                    }
-                    stateManager.setState(DjiDroneState.FLYING, isFlying);
+                if (stateManager.isInState(DjiDroneState.FLYING, false, 2) && isFlying) {
+                    // Took off
+                    stateManager.setState(DjiDroneState.FLYING, true);
+                    dispatch(DjiDroneEvent.TAKE_OFF);
+                    stateChanged = true;
+                } else if (stateManager.isInState(DjiDroneState.FLYING, true, 2) && !isFlying) {
+                    // Landed
+                    stateManager.setState(DjiDroneState.FLYING, false);
+                    dispatch(DjiDroneEvent.LAND);
                     stateChanged = true;
                 }
 
