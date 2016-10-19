@@ -1,16 +1,24 @@
 package com.humanless.neuron;
 
-import android.util.SparseArray;
-
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Base drone state manager. Drone state manager is responsible for maintaining the current state
  * of the drone.
  */
-public abstract class DroneStateManager {
-    private SparseArray<Object> states = new SparseArray<>();
-    private SparseArray<Date> updateTimes = new SparseArray<>();
+public class DroneStateManager<StateType> {
+    private HashMap<StateType, Object> states = new HashMap<>();
+    private HashMap<StateType, Date> updateTimes = new HashMap<>();
+
+    /**
+     * Clear all states.
+     */
+    public void resetState() {
+        states.clear();
+        updateTimes.clear();
+    }
 
     /**
      * Set the value of the specified state. State will not be set if the value is the same as
@@ -20,7 +28,7 @@ public abstract class DroneStateManager {
      * @param value The value.
      * @return true, if state is updated; otherwise, false.
      */
-    public boolean setState(int state, Object value) {
+    public boolean setState(StateType state, Object value) {
         return setStates(state, value, false);
     }
 
@@ -34,12 +42,12 @@ public abstract class DroneStateManager {
      *              only set if the value is different from existing value.
      * @return true, if state is updated; otherwise, false.
      */
-    public boolean setStates(int state, Object value, boolean force) {
+    public boolean setStates(StateType state, Object value, boolean force) {
         Object currentValue = getState(state);
 
         if (currentValue != value || force) {
-            states.setValueAt(state, value);
-            updateTimes.setValueAt(state, new Date());
+            states.put(state, value);
+            updateTimes.put(state, new Date());
             return true;
         }
 
@@ -52,7 +60,7 @@ public abstract class DroneStateManager {
      * @param state The state to retrieve.
      * @return The existing value of the state. Value can be null.
      */
-    public Object getState(int state) {
+    public Object getState(StateType state) {
         return states.get(state);
     }
 
@@ -63,11 +71,8 @@ public abstract class DroneStateManager {
      * @param value The value the state should be in.
      * @return true, if the drone's current state matches the specified state; otherwise, false.
      */
-    public boolean isInState(int state, Object value) {
-        if (getState(state) == value) {
-            return true;
-        }
-        return false;
+    public boolean isInState(StateType state, Object value) {
+        return (getState(state) == value);
     }
 
     /**
@@ -76,11 +81,9 @@ public abstract class DroneStateManager {
      * @param states The list of states to check.
      * @return true, if the drone's current state matches the specified states; otherwise, false.
      */
-    public boolean isInStates(SparseArray<Object> states) {
-        for (int i = 0; i < states.size(); i++) {
-            int key = states.keyAt(i);
-            Object value = states.get(key);
-            if (getState(key) != value) {
+    public boolean isInStates(HashMap<StateType, Object> states) {
+        for (Map.Entry<StateType, Object> entry : states.entrySet()) {
+            if (getState(entry.getKey()) != entry.getValue()) {
                 return false;
             }
         }

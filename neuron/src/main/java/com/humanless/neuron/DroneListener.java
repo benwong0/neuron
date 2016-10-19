@@ -2,12 +2,14 @@ package com.humanless.neuron;
 
 import android.support.annotation.NonNull;
 
+import java.util.HashMap;
+
 /**
  * Base drone listener.
  */
-public class DroneListener {
-    private int[] events;
-    private int[] states;
+public class DroneListener<EventType, StateType> {
+    private EventType[] events;
+    private HashMap<StateType, Object> states;
     private Runnable callback;
 
     /**
@@ -19,7 +21,7 @@ public class DroneListener {
      *                 Value can be null.
      * @param callback The callback to trigger.
      */
-    public DroneListener(@NonNull int[] events, int[] states, @NonNull Runnable callback) {
+    public DroneListener(@NonNull EventType[] events, HashMap<StateType, Object> states, @NonNull Runnable callback) {
         this.events = events;
         this.states = states;
         this.callback = callback;
@@ -28,18 +30,18 @@ public class DroneListener {
     /**
      * Get the list of events it's listening to.
      *
-     * @return An int array representing the list of events.
+     * @return An array of events.
      */
-    public int[] getEvents() {
+    public EventType[] getEvents() {
         return events;
     }
 
     /**
      * Get the list of states the drone must be in in order to trigger the callback.
      *
-     * @return An int array representing the list of states. Value can be null.
+     * @return A HashMap of states and their values. Can return null.
      */
-    public int[] getStates() {
+    public HashMap<StateType, Object> getStates() {
         return states;
     }
 
@@ -58,8 +60,8 @@ public class DroneListener {
      * @param event The event to check for.
      * @return true, if this listener will trigger on the specified event; otherwise, false.
      */
-    public boolean isForEvent(int event) {
-        for (int e : events) {
+    public boolean isForEvent(EventType event) {
+        for (EventType e : events) {
             if (e == event) {
                 return true;
             }

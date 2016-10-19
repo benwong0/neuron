@@ -5,7 +5,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static org.mockito.Matchers.any;
+import java.util.HashMap;
+
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -17,46 +18,67 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class DroneDispatcherTest {
     @Mock
-    private DroneListener droneListener;
-
-    @Mock
-    private DroneStateManager droneStateManager;
+    private DroneListener<String, String> listener;
 
     @Test
     public void dispatch() {
-        DroneDispatcher dispatcher = new DroneDispatcher();
-        int event = 0;
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-
-            }
+        DroneDispatcher<String, String> dispatcher = new DroneDispatcher<String, String>() {
         };
 
-        dispatcher.setDroneStateManager(droneStateManager);
-        dispatcher.addListener(droneListener);
+        HashMap<String, Object> states = new HashMap<>();
+        states.put("state1", "1");
+        String event = "event";
+        String[] events = new String[]{event};
 
-        when(droneListener.getCallback()).thenReturn(runnable);
+        when(listener.getCallback()).thenReturn(new Runnable() {
+            @Override
+            public void run() {
+            }
+        });
+        when(listener.getStates()).thenReturn(states);
+        when(listener.getEvents()).thenReturn(events);
 
-        when(droneListener.isForEvent(event)).thenReturn(true);
-        when(droneStateManager.isInStates(any(int[].class))).thenReturn(true);
+        dispatcher.addListener(listener);
+
+        dispatcher.getDroneStateManager().setState("state1", "2");
+        when(listener.isForEvent(event)).thenReturn(true);
         dispatcher.dispatch(event);
-        verify(droneListener, times(1)).getCallback();
-        reset(droneListener);
+        verify(listener, times(0)).getCallback();
 
-        when(droneListener.isForEvent(event)).thenReturn(false);
-        when(droneStateManager.isInStates(any(int[].class))).thenReturn(false);
+        dispatcher.getDroneStateManager().setState("state1", "1");
+        when(listener.isForEvent(event)).thenReturn(false);
         dispatcher.dispatch(event);
-        verify(droneListener, times(0)).getCallback();
+        verify(listener, times(0)).getCallback();
 
-        when(droneListener.isForEvent(event)).thenReturn(true);
-        when(droneStateManager.isInStates(any(int[].class))).thenReturn(false);
+        dispatcher.getDroneStateManager().setState("state1", "2");
+        when(listener.isForEvent(event)).thenReturn(false);
         dispatcher.dispatch(event);
-        verify(droneListener, times(0)).getCallback();
+        verify(listener, times(0)).getCallback();
 
-        when(droneListener.isForEvent(event)).thenReturn(false);
-        when(droneStateManager.isInStates(any(int[].class))).thenReturn(true);
+        dispatcher.getDroneStateManager().setState("state1", "1");
+        when(listener.isForEvent(event)).thenReturn(true);
         dispatcher.dispatch(event);
-        verify(droneListener, times(0)).getCallback();
+        verify(listener, times(1)).getCallback();
+
+        // Without listener
+        reset(listener);
+
+        when(listener.getCallback()).thenReturn(new Runnable() {
+            @Override
+            public void run() {
+            }
+        });
+        when(listener.getStates()).thenReturn(states);
+        when(listener.getEvents()).thenReturn(events);
+
+        dispatcher.removeListener(listener);
+        dispatcher.getDroneStateManager().setState("state1", "1");
+        when(listener.isForEvent(event)).thenReturn(true);
+        dispatcher.dispatch(event);
+        verify(listener, times(0)).getCallback();
+    }
+
+    public void addRemoveListener() {
+
     }
 }

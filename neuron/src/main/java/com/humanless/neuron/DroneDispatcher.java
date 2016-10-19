@@ -4,18 +4,18 @@ import java.util.ArrayList;
 
 /**
  * Base drone dispatcher. Dispatcher is responsible for listening to drone events and state changes
- * as well as maintaining the current states of the drone.
+ * as well as maintaining the current states of the drone via DroneStateManager.
  */
-public class DroneDispatcher {
-    private ArrayList<DroneListener> listeners = new ArrayList<>();
-    private DroneStateManager droneStateManager;
+public abstract class DroneDispatcher<EventType, StateType> {
+    private ArrayList<DroneListener<EventType, StateType>> listeners = new ArrayList<>();
+    private DroneStateManager<StateType> droneStateManager = new DroneStateManager<>();
 
     /**
      * Add listener to dispatcher.
      *
      * @param listener The listener to add.
      */
-    public void addListener(DroneListener listener) {
+    public void addListener(DroneListener<EventType, StateType> listener) {
         listeners.add(listener);
     }
 
@@ -24,7 +24,7 @@ public class DroneDispatcher {
      *
      * @param listener The listener to remove.
      */
-    public void removeListener(DroneListener listener) {
+    public void removeListener(DroneListener<EventType, StateType> listener) {
         listeners.remove(listener);
     }
 
@@ -33,17 +33,8 @@ public class DroneDispatcher {
      *
      * @return The drone state manager.
      */
-    public DroneStateManager getDroneStateManager() {
+    public DroneStateManager<StateType> getDroneStateManager() {
         return droneStateManager;
-    }
-
-    /**
-     * Set the drone state manager.
-     *
-     * @param droneStateManager The drone state manager to set.
-     */
-    protected void setDroneStateManager(DroneStateManager droneStateManager) {
-        this.droneStateManager = droneStateManager;
     }
 
     /**
@@ -52,8 +43,8 @@ public class DroneDispatcher {
      *
      * @param event The event to dispatch.
      */
-    protected void dispatch(int event) {
-        for (DroneListener listener : listeners) {
+    protected void dispatch(EventType event) {
+        for (DroneListener<EventType, StateType> listener : listeners) {
             if (listener.isForEvent(event) && droneStateManager.isInStates(listener.getStates())) {
                 listener.getCallback().run();
             }

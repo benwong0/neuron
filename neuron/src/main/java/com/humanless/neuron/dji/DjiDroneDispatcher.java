@@ -3,6 +3,7 @@ package com.humanless.neuron.dji;
 import android.content.Context;
 
 import com.humanless.neuron.DroneDispatcher;
+import com.humanless.neuron.DroneStateManager;
 
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
@@ -20,15 +21,13 @@ import dji.sdk.sdkmanager.DJISDKManager;
 /**
  * Drone dispatcher for DJI SDK.
  */
-public class DjiDroneDispatcher extends DroneDispatcher {
+public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneState> {
     public DjiDroneDispatcher(Context context) {
         setupConnectionListener(context);
-
-        setDroneStateManager(new DjiDroneStateManager());
     }
 
     private void setupConnectionListener(Context context) {
-        final DjiDroneStateManager stateManager = (DjiDroneStateManager) getDroneStateManager();
+        final DroneStateManager<DjiDroneState> stateManager = getDroneStateManager();
         DJISDKManager.DJISDKManagerCallback djisdkManagerCallback = new DJISDKManager.DJISDKManagerCallback() {
             @Override
             public void onGetRegisteredResult(DJIError error) {
@@ -61,7 +60,7 @@ public class DjiDroneDispatcher extends DroneDispatcher {
     }
 
     private void setupProductListener(DJIBaseProduct djiBaseProduct) {
-        final DjiDroneStateManager stateManager = (DjiDroneStateManager) getDroneStateManager();
+        final DroneStateManager<DjiDroneState> stateManager = getDroneStateManager();
         djiBaseProduct.setDJIBaseProductListener(new DJIBaseProduct.DJIBaseProductListener() {
             @Override
             public void onComponentChange(DJIBaseProduct.DJIComponentKey djiComponentKey, DJIBaseComponent djiBaseComponent, DJIBaseComponent djiBaseComponent1) {
@@ -85,32 +84,27 @@ public class DjiDroneDispatcher extends DroneDispatcher {
         flightController.setUpdateSystemStateCallback(new DJIFlightControllerDelegate.FlightControllerUpdateSystemStateCallback() {
             @Override
             public void onResult(DJIFlightControllerCurrentState djiFlightControllerCurrentState) {
-                DjiDroneStateManager stateManager = (DjiDroneStateManager) getDroneStateManager();
+                DroneStateManager<DjiDroneState> stateManager = getDroneStateManager();
                 boolean stateChanged = false;
 
                 // Home location
                 DJILocationCoordinate2D homeLocation = djiFlightControllerCurrentState.getHomeLocation();
-                if (!stateManager.isInState(DjiDroneState.HOME_LOCATION_LATITUDE, homeLocation.getLatitude())) {
-                    stateManager.setState(DjiDroneState.HOME_LOCATION_LATITUDE, homeLocation.getLatitude());
+                if (stateManager.setState(DjiDroneState.HOME_LOCATION_LATITUDE, homeLocation.getLatitude())) {
                     stateChanged = true;
                 }
-                if (!stateManager.isInState(DjiDroneState.HOME_LOCATION_LONGITUDE, homeLocation.getLongitude())) {
-                    stateManager.setState(DjiDroneState.HOME_LOCATION_LONGITUDE, homeLocation.getLongitude());
+                if (stateManager.setState(DjiDroneState.HOME_LOCATION_LONGITUDE, homeLocation.getLongitude())) {
                     stateChanged = true;
                 }
 
                 // Aircraft location
                 DJILocationCoordinate3D aircraftLocation = djiFlightControllerCurrentState.getAircraftLocation();
-                if (!stateManager.isInState(DjiDroneState.AIRCRAFT_LOCATION_LATITUDE, aircraftLocation.getLatitude())) {
-                    stateManager.setState(DjiDroneState.AIRCRAFT_LOCATION_LATITUDE, aircraftLocation.getLatitude());
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_LOCATION_LATITUDE, aircraftLocation.getLatitude())) {
                     stateChanged = true;
                 }
-                if (!stateManager.isInState(DjiDroneState.AIRCRAFT_LOCATION_LONGITUDE, aircraftLocation.getLongitude())) {
-                    stateManager.setState(DjiDroneState.AIRCRAFT_LOCATION_LONGITUDE, aircraftLocation.getLongitude());
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_LOCATION_LONGITUDE, aircraftLocation.getLongitude())) {
                     stateChanged = true;
                 }
-                if (!stateManager.isInState(DjiDroneState.AIRCRAFT_LOCATION_ALTITUDE, aircraftLocation.getAltitude())) {
-                    stateManager.setState(DjiDroneState.AIRCRAFT_LOCATION_ALTITUDE, aircraftLocation.getAltitude());
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_LOCATION_ALTITUDE, aircraftLocation.getAltitude())) {
                     stateChanged = true;
                 }
 
@@ -134,9 +128,5 @@ public class DjiDroneDispatcher extends DroneDispatcher {
                 }
             }
         });
-    }
-
-    private void dispatch(DjiDroneEvent event) {
-        dispatch(event.ordinal());
     }
 }
