@@ -8,7 +8,7 @@ import java.util.List;
  * as well as maintaining the current states of the drone via DroneStateManager.
  */
 public abstract class DroneDispatcher<EventType, StateType> {
-    private ArrayList<DroneListener<EventType, StateType>> listeners = new ArrayList<>();
+    final private ArrayList<DroneListener<EventType, StateType>> listeners = new ArrayList<>();
     private DroneStateManager<StateType> droneStateManager = new DroneStateManager<>();
 
     /**
@@ -17,7 +17,9 @@ public abstract class DroneDispatcher<EventType, StateType> {
      * @param listener The listener to add.
      */
     public void addListener(DroneListener<EventType, StateType> listener) {
-        listeners.add(listener);
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
     }
 
     /**
@@ -26,7 +28,9 @@ public abstract class DroneDispatcher<EventType, StateType> {
      * @param listener The listener to remove.
      */
     public void removeListener(DroneListener<EventType, StateType> listener) {
-        listeners.remove(listener);
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
     }
 
     /**
@@ -57,11 +61,13 @@ public abstract class DroneDispatcher<EventType, StateType> {
      *                   Parameters can be null.
      */
     protected void dispatch(EventType event, List<Object> parameters) {
-        for (DroneListener<EventType, StateType> listener : listeners) {
-            if (listener.isForEvent(event) && droneStateManager.isInStates(listener.getStates())) {
-                DroneListenerCallback callback = listener.getCallback();
-                if (callback != null) {
-                    callback.run(parameters);
+        synchronized (listeners) {
+            for (DroneListener<EventType, StateType> listener : listeners) {
+                if (listener.isForEvent(event) && droneStateManager.isInStates(listener.getStates())) {
+                    DroneListenerCallback callback = listener.getCallback();
+                    if (callback != null) {
+                        callback.run(parameters);
+                    }
                 }
             }
         }

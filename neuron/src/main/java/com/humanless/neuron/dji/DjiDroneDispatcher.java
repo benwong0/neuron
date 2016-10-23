@@ -65,12 +65,13 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
                     }
                     stateManager.setState(DjiDroneState.PRODUCTION_CONNECTION, product.isConnected());
 
-                    dispatch(DjiDroneEvent.PRODUCT_CHANGE);
                     setupProductListener(product);
                     setupAircraftStateListener(product);
                     setupBatteryListener(product);
                     setupCameraStateListener(product);
                     setupCameraVideoDataListener(product);
+
+                    dispatch(DjiDroneEvent.PRODUCT_CHANGE);
                 }
             }
         };

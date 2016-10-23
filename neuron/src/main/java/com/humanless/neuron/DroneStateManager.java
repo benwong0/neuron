@@ -3,14 +3,15 @@ package com.humanless.neuron;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Base drone state manager. Drone state manager is responsible for maintaining the current state
  * of the drone.
  */
 public class DroneStateManager<StateType> {
-    private HashMap<StateType, Object> states = new HashMap<>();
-    private HashMap<StateType, Date> updateTimes = new HashMap<>();
+    private ConcurrentHashMap<StateType, Object> states = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<StateType, Date> updateTimes = new ConcurrentHashMap<>();
 
     /**
      * Clear all states.

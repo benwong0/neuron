@@ -14,7 +14,7 @@ public abstract class DjiDroneListenerVideoFeedCallback implements DroneListener
     @Override
     public void run(List<Object> parameters) {
         if (parameters.size() == 2) {
-            if (parameters.get(0) instanceof byte[] && parameters.get(1) instanceof Integer) {
+            if (parameters.get(0) instanceof byte[] && Integer.class.isInstance(parameters.get(1))) {
                 run((byte[]) parameters.get(0), (int) parameters.get(1));
             }
         }
