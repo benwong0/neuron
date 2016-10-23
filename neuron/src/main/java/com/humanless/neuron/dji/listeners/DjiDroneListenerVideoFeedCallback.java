@@ -9,7 +9,7 @@ import java.util.List;
  * variables.
  */
 public abstract class DjiDroneListenerVideoFeedCallback implements DroneListenerCallback {
-    abstract void run(byte[] bytes, int i);
+    public abstract void run(byte[] bytes, int i);
 
     @Override
     public void run(List<Object> parameters) {
