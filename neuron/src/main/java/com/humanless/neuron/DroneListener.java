@@ -10,7 +10,7 @@ import java.util.HashMap;
 public class DroneListener<EventType, StateType> {
     private EventType[] events;
     private HashMap<StateType, Object> states;
-    private Runnable callback;
+    private DroneListenerCallback callback;
 
     /**
      * Instantiate a listener for the specified events and state. The callback will be triggered
@@ -21,7 +21,7 @@ public class DroneListener<EventType, StateType> {
      *                 Value can be null.
      * @param callback The callback to trigger.
      */
-    public DroneListener(@NonNull EventType[] events, HashMap<StateType, Object> states, @NonNull Runnable callback) {
+    public DroneListener(@NonNull EventType[] events, HashMap<StateType, Object> states, @NonNull DroneListenerCallback callback) {
         this.events = events;
         this.states = states;
         this.callback = callback;
@@ -50,7 +50,7 @@ public class DroneListener<EventType, StateType> {
      *
      * @return The event callback.
      */
-    public Runnable getCallback() {
+    public DroneListenerCallback getCallback() {
         return callback;
     }
 

@@ -1,6 +1,7 @@
 package com.humanless.neuron;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Base drone dispatcher. Dispatcher is responsible for listening to drone events and state changes
@@ -44,9 +45,24 @@ public abstract class DroneDispatcher<EventType, StateType> {
      * @param event The event to dispatch.
      */
     protected void dispatch(EventType event) {
+        dispatch(event, null);
+    }
+
+    /**
+     * Notify all listener listening for the specified event. The callback will triggered if the
+     * requirement states are satisfied.
+     *
+     * @param event      The event to dispatch.
+     * @param parameters A list of parameters containing results from the listener.
+     *                   Parameters can be null.
+     */
+    protected void dispatch(EventType event, List<Object> parameters) {
         for (DroneListener<EventType, StateType> listener : listeners) {
             if (listener.isForEvent(event) && droneStateManager.isInStates(listener.getStates())) {
-                listener.getCallback().run();
+                DroneListenerCallback callback = listener.getCallback();
+                if (callback != null) {
+                    callback.run(parameters);
+                }
             }
         }
     }

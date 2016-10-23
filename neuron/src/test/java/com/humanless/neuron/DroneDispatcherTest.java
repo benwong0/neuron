@@ -6,6 +6,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.HashMap;
+import java.util.List;
 
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -30,9 +31,9 @@ public class DroneDispatcherTest {
         String event = "event";
         String[] events = new String[]{event};
 
-        when(listener.getCallback()).thenReturn(new Runnable() {
+        when(listener.getCallback()).thenReturn(new DroneListenerCallback() {
             @Override
-            public void run() {
+            public void run(List<Object> parameters) {
             }
         });
         when(listener.getStates()).thenReturn(states);
@@ -63,9 +64,9 @@ public class DroneDispatcherTest {
         // Without listener
         reset(listener);
 
-        when(listener.getCallback()).thenReturn(new Runnable() {
+        when(listener.getCallback()).thenReturn(new DroneListenerCallback() {
             @Override
-            public void run() {
+            public void run(List<Object> parameters) {
             }
         });
         when(listener.getStates()).thenReturn(states);
