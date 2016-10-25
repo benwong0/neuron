@@ -10,6 +10,7 @@ import java.util.Arrays;
 
 import dji.common.battery.DJIBatteryState;
 import dji.common.camera.CameraSystemState;
+import dji.common.camera.DJICameraExposureParameters;
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
 import dji.common.flightcontroller.DJIFlightControllerCurrentState;
@@ -70,6 +71,7 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
                     setupBatteryListener(product);
                     setupCameraStateListener(product);
                     setupCameraVideoDataListener(product);
+                    setupCameraExposureListener(product);
 
                     dispatch(DjiDroneEvent.PRODUCT_CHANGE);
                 }
@@ -105,6 +107,38 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
             @Override
             public void onResult(byte[] bytes, int i) {
                 dispatch(DjiDroneEvent.CAMERA_VIDEO_FEED, Arrays.asList((Object) bytes, i));
+            }
+        });
+    }
+
+    private void setupCameraExposureListener(DJIBaseProduct djiBaseProduct) {
+        DJICamera camera = djiBaseProduct.getCamera();
+        if (camera == null) {
+            return;
+        }
+
+        camera.setCameraUpdatedCurrentExposureValuesCallback(new DJICamera.CameraUpdatedCurrentExposureValuesCallback() {
+            @Override
+            public void onResult(DJICameraExposureParameters djiCameraExposureParameters) {
+                DroneStateManager<DjiDroneState> stateManager = getDroneStateManager();
+                boolean stateChanged = false;
+
+                if (stateManager.setState(DjiDroneState.CAMERA_APERTURE, djiCameraExposureParameters.getAperture())) {
+                    stateChanged = true;
+                }
+                if (stateManager.setState(DjiDroneState.CAMERA_EXPOSURE_COMPENSATION, djiCameraExposureParameters.getExposureCompensation())) {
+                    stateChanged = true;
+                }
+                if (stateManager.setState(DjiDroneState.CAMERA_ISO, djiCameraExposureParameters.getISO())) {
+                    stateChanged = true;
+                }
+                if (stateManager.setState(DjiDroneState.CAMERA_SHUTTER_SPEED, djiCameraExposureParameters.getShutterSpeed())) {
+                    stateChanged = true;
+                }
+
+                if (stateChanged) {
+                    dispatch(DjiDroneEvent.CAMERA_EXPOSURE_CHANGE);
+                }
             }
         });
     }
