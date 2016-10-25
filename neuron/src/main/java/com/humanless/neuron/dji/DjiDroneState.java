@@ -63,4 +63,7 @@ public enum DjiDroneState {
 
     // Media
     CAMERA_MEDIA,
+
+    // Diagnostic
+    DIAGNOSTICS
 }

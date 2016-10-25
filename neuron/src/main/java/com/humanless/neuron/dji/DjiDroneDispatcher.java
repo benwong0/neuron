@@ -7,6 +7,7 @@ import com.humanless.neuron.DroneStateManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import dji.common.battery.DJIBatteryState;
 import dji.common.camera.CameraSystemState;
@@ -19,6 +20,7 @@ import dji.common.flightcontroller.DJILocationCoordinate3D;
 import dji.common.util.DJICommonCallbacks;
 import dji.sdk.base.DJIBaseComponent;
 import dji.sdk.base.DJIBaseProduct;
+import dji.sdk.base.DJIDiagnostics;
 import dji.sdk.battery.DJIBattery;
 import dji.sdk.camera.DJICamera;
 import dji.sdk.camera.DJIMedia;
@@ -74,6 +76,7 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
                     setupCameraVideoDataListener(product);
                     setupCameraExposureListener(product);
                     setupCameraMediaListener(product);
+                    setupDiagnosticListener(product);
 
                     dispatch(DjiDroneEvent.PRODUCT_CHANGE);
                 }
@@ -82,6 +85,9 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
 
         DJISDKManager.getInstance().initSDKManager(context, djisdkManagerCallback);
     }
+
+    
+    // region Basic product listener
 
     private void setupProductListener(DJIBaseProduct djiBaseProduct) {
         final DroneStateManager<DjiDroneState> stateManager = getDroneStateManager();
@@ -98,6 +104,48 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
             }
         });
     }
+
+    // endregion
+
+
+    // region Diagnostic related listeners
+
+    private void setupDiagnosticListener(DJIBaseProduct djiBaseProduct) {
+        djiBaseProduct.setUpdateDiagnosticsListCallback(new DJIDiagnostics.UpdateDiagnosticsListCallback() {
+            @Override
+            public void onDiagnosticsListUpdate(List<DJIDiagnostics> list) {
+                DroneStateManager<DjiDroneState> stateManager = getDroneStateManager();
+                boolean stateChanged = false;
+
+                List exist = (List) stateManager.getState(DjiDroneState.DIAGNOSTICS);
+
+                int existCnt = exist == null ? 0 : exist.size();
+                int listCnt = list == null ? 0 : list.size();
+
+                if (existCnt != listCnt) {
+                    stateChanged = true;
+                } else {
+                    for (int i = 0; i < existCnt; i++) {
+                        DJIDiagnostics oldMsg = (DJIDiagnostics) exist.get(i);
+                        DJIDiagnostics newMsg = list.get(i);
+                        if (oldMsg.getCode() != newMsg.getCode()) {
+                            stateChanged = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (stateChanged) {
+                    stateManager.setState(DjiDroneState.DIAGNOSTICS, list);
+                    dispatch(DjiDroneEvent.DIAGNOSTIC);
+                }
+            }
+        });
+    }
+
+    // endregion
+
+    // region Camera related listeners
 
     private void setupCameraVideoDataListener(DJIBaseProduct djiBaseProduct) {
         DJICamera camera = djiBaseProduct.getCamera();
@@ -218,6 +266,10 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
         });
     }
 
+    // endregion
+
+    // region Battery related listeners
+
     private void setupBatteryListener(DJIBaseProduct djiBaseProduct) {
         ArrayList<DJIBattery> batteries = djiBaseProduct.getBatteries();
 
@@ -267,6 +319,10 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
             });
         }
     }
+
+    // endregion
+
+    // region Aircraft related listeners
 
     private void setupAircraftStateListener(DJIBaseProduct djiBaseProduct) {
         if (!(djiBaseProduct instanceof DJIAircraft)) {
@@ -365,4 +421,6 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
             }
         });
     }
+
+    // endregion
 }
