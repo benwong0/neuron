@@ -8,7 +8,7 @@ import java.util.List;
  * as well as maintaining the current states of the drone via DroneStateManager.
  */
 public abstract class DroneDispatcher<EventType, StateType> {
-    final private ArrayList<DroneListener<EventType, StateType>> listeners = new ArrayList<>();
+    private final ArrayList<DroneListener<EventType, StateType>> listeners = new ArrayList<>();
     private DroneStateManager<StateType> droneStateManager = new DroneStateManager<>();
 
     /**
@@ -63,11 +63,13 @@ public abstract class DroneDispatcher<EventType, StateType> {
     protected void dispatch(EventType event, List<Object> parameters) {
         synchronized (listeners) {
             for (DroneListener<EventType, StateType> listener : listeners) {
-                if (listener.isForEvent(event) && droneStateManager.isInStates(listener.getStates())) {
-                    DroneListenerCallback callback = listener.getCallback();
-                    if (callback != null) {
-                        callback.run(parameters);
-                    }
+                if (!listener.isForEvent(event) || !droneStateManager.isInStates(listener.getStates())) {
+                    continue;
+                }
+
+                DroneListenerCallback callback = listener.getCallback();
+                if (callback != null) {
+                    callback.run(parameters);
                 }
             }
         }
