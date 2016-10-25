@@ -60,4 +60,7 @@ public enum DjiDroneState {
     CAMERA_EXPOSURE_COMPENSATION,
     CAMERA_ISO,
     CAMERA_SHUTTER_SPEED,
+
+    // Media
+    CAMERA_MEDIA,
 }

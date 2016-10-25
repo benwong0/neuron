@@ -21,6 +21,7 @@ import dji.sdk.base.DJIBaseComponent;
 import dji.sdk.base.DJIBaseProduct;
 import dji.sdk.battery.DJIBattery;
 import dji.sdk.camera.DJICamera;
+import dji.sdk.camera.DJIMedia;
 import dji.sdk.flightcontroller.DJIFlightController;
 import dji.sdk.flightcontroller.DJIFlightControllerDelegate;
 import dji.sdk.products.DJIAircraft;
@@ -72,6 +73,7 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
                     setupCameraStateListener(product);
                     setupCameraVideoDataListener(product);
                     setupCameraExposureListener(product);
+                    setupCameraMediaListener(product);
 
                     dispatch(DjiDroneEvent.PRODUCT_CHANGE);
                 }
@@ -107,6 +109,26 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
             @Override
             public void onResult(byte[] bytes, int i) {
                 dispatch(DjiDroneEvent.CAMERA_VIDEO_FEED, Arrays.asList((Object) bytes, i));
+            }
+        });
+    }
+
+    private void setupCameraMediaListener(DJIBaseProduct djiBaseProduct) {
+        DJICamera camera = djiBaseProduct.getCamera();
+        if (camera == null) {
+            return;
+        }
+
+        camera.setDJICameraGeneratedNewMediaFileCallback(new DJICamera.CameraGeneratedNewMediaFileCallback() {
+            @Override
+            public void onResult(DJIMedia djiMedia) {
+                DroneStateManager<DjiDroneState> stateManager = getDroneStateManager();
+
+                DJIMedia currentMedia = (DJIMedia) stateManager.getState(DjiDroneState.CAMERA_MEDIA);
+                if (currentMedia != null && djiMedia.getFileName().equals(currentMedia.getFileName())) {
+                    stateManager.setState(DjiDroneState.CAMERA_MEDIA, djiMedia);
+                    dispatch(DjiDroneEvent.CAMERA_MEDIA);
+                }
             }
         });
     }

@@ -13,6 +13,7 @@ public enum DjiDroneEvent {
     CAMERA_STATE_CHANGE,
     CAMERA_EXPOSURE_CHANGE,
     CAMERA_VIDEO_FEED,
+    CAMERA_MEDIA,
     TAKE_OFF,
     LAND,
 }
