@@ -32,6 +32,9 @@ public enum DjiDroneState {
     // Diagnostic
     AIRCRAFT_DIAGNOSTICS,
 
+    // Remote
+    CONTROLLER_SIGNAL,
+
     // Battery
     BATTERY_ENERGY_REMAINING_PERCENT,
     BATTERY_TEMPERATURE,

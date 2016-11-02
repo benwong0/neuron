@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import dji.common.airlink.DJISignalInformation;
 import dji.common.battery.DJIBatteryState;
 import dji.common.camera.CameraSystemState;
 import dji.common.camera.DJICameraExposureParameters;
@@ -18,6 +19,8 @@ import dji.common.flightcontroller.DJIFlightControllerCurrentState;
 import dji.common.flightcontroller.DJILocationCoordinate2D;
 import dji.common.flightcontroller.DJILocationCoordinate3D;
 import dji.common.util.DJICommonCallbacks;
+import dji.sdk.airlink.DJIAirLink;
+import dji.sdk.airlink.DJILBAirLink;
 import dji.sdk.base.DJIBaseComponent;
 import dji.sdk.base.DJIBaseProduct;
 import dji.sdk.base.DJIDiagnostics;
@@ -28,6 +31,8 @@ import dji.sdk.flightcontroller.DJIFlightController;
 import dji.sdk.flightcontroller.DJIFlightControllerDelegate;
 import dji.sdk.products.DJIAircraft;
 import dji.sdk.sdkmanager.DJISDKManager;
+
+import static android.R.id.list;
 
 /**
  * Drone dispatcher for DJI SDK.
@@ -77,6 +82,7 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
                     setupCameraExposureListener(product);
                     setupCameraMediaListener(product);
                     setupDiagnosticListener(product);
+                    setupControllerSignalListener(product);
 
                     dispatch(DjiDroneEvent.PRODUCT_CHANGE);
                 }
@@ -85,7 +91,6 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
 
         DJISDKManager.getInstance().initSDKManager(context, djisdkManagerCallback);
     }
-
 
     // region Basic product listener
 
@@ -103,6 +108,49 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
                 dispatch(DjiDroneEvent.PRODUCT_CONNECTION_CHANGE);
             }
         });
+    }
+
+    // endregion
+
+
+    // region Remote controller listener
+
+    private void setupControllerSignalListener(DJIBaseProduct djiBaseProduct) {
+        DJIAirLink airLink = djiBaseProduct.getAirLink();
+        if (airLink != null && airLink.isLBAirLinkSupported()) {
+            DJILBAirLink lbAirLink = airLink.getLBAirLink();
+            if (lbAirLink != null) {
+                lbAirLink.setLBAirLinkUpdatedRemoteControllerSignalInformationCallback(new DJILBAirLink.DJILBAirLinkUpdatedRemoteControllerSignalInformationCallback() {
+                    @Override
+                    public void onResult(ArrayList<DJISignalInformation> arrayList) {
+                        DroneStateManager<DjiDroneState> stateManager = getDroneStateManager();
+                        boolean stateChanged = false;
+
+                        List exist = (List) stateManager.getState(DjiDroneState.CONTROLLER_SIGNAL);
+                        int existCnt = exist == null ? 0 : exist.size();
+                        int listCnt = arrayList == null ? 0 : arrayList.size();
+
+                        if (existCnt != listCnt) {
+                            stateChanged = true;
+                        } else {
+                            for (int i = 0; i < existCnt; i++) {
+                                DJISignalInformation oldSignal = (DJISignalInformation) exist.get(i);
+                                DJISignalInformation newSignal = arrayList.get(i);
+                                if (oldSignal.getPercent() != newSignal.getPercent() || oldSignal.getPower() != newSignal.getPower()) {
+                                    stateChanged = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (stateChanged) {
+                            stateManager.setState(DjiDroneState.CONTROLLER_SIGNAL, list);
+                            dispatch(DjiDroneEvent.CONTROLLER_SIGNAL_CHANGE);
+                        }
+                    }
+                });
+            }
+        }
     }
 
     // endregion
