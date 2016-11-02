@@ -42,8 +42,8 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
         DJISDKManager.DJISDKManagerCallback djisdkManagerCallback = new DJISDKManager.DJISDKManagerCallback() {
             @Override
             public void onGetRegisteredResult(DJIError error) {
-                stateManager.setState(DjiDroneState.REGISTRATION, error == DJISDKError.REGISTRATION_SUCCESS);
-                dispatch(DjiDroneEvent.REGISTRATION);
+                stateManager.setState(DjiDroneState.PRODUCT_REGISTRATION, error == DJISDKError.REGISTRATION_SUCCESS);
+                dispatch(DjiDroneEvent.PRODUCT_REGISTRATION);
             }
 
             @Override
@@ -86,7 +86,7 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
         DJISDKManager.getInstance().initSDKManager(context, djisdkManagerCallback);
     }
 
-    
+
     // region Basic product listener
 
     private void setupProductListener(DJIBaseProduct djiBaseProduct) {
@@ -94,7 +94,7 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
         djiBaseProduct.setDJIBaseProductListener(new DJIBaseProduct.DJIBaseProductListener() {
             @Override
             public void onComponentChange(DJIBaseProduct.DJIComponentKey djiComponentKey, DJIBaseComponent djiBaseComponent, DJIBaseComponent djiBaseComponent1) {
-                dispatch(DjiDroneEvent.COMPONENT_CHANGE);
+                dispatch(DjiDroneEvent.PRODUCT_COMPONENT_CHANGE);
             }
 
             @Override
@@ -117,7 +117,7 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
                 DroneStateManager<DjiDroneState> stateManager = getDroneStateManager();
                 boolean stateChanged = false;
 
-                List exist = (List) stateManager.getState(DjiDroneState.DIAGNOSTICS);
+                List exist = (List) stateManager.getState(DjiDroneState.AIRCRAFT_DIAGNOSTICS);
 
                 int existCnt = exist == null ? 0 : exist.size();
                 int listCnt = list == null ? 0 : list.size();
@@ -136,8 +136,8 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
                 }
 
                 if (stateChanged) {
-                    stateManager.setState(DjiDroneState.DIAGNOSTICS, list);
-                    dispatch(DjiDroneEvent.DIAGNOSTIC);
+                    stateManager.setState(DjiDroneState.AIRCRAFT_DIAGNOSTICS, list);
+                    dispatch(DjiDroneEvent.AIRCRAFT_DIAGNOSTIC);
                 }
             }
         });
@@ -338,10 +338,10 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
 
                 // Home location
                 DJILocationCoordinate2D homeLocation = djiFlightControllerCurrentState.getHomeLocation();
-                if (stateManager.setState(DjiDroneState.HOME_LOCATION_LATITUDE, homeLocation.getLatitude())) {
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_HOME_LOCATION_LATITUDE, homeLocation.getLatitude())) {
                     stateChanged = true;
                 }
-                if (stateManager.setState(DjiDroneState.HOME_LOCATION_LONGITUDE, homeLocation.getLongitude())) {
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_HOME_LOCATION_LONGITUDE, homeLocation.getLongitude())) {
                     stateChanged = true;
                 }
 
@@ -359,64 +359,64 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
 
                 // Take off/landing
                 boolean isFlying = djiFlightControllerCurrentState.isFlying();
-                if (stateManager.isInState(DjiDroneState.FLYING, false, 2) && isFlying) {
+                if (stateManager.isInState(DjiDroneState.AIRCRAFT_FLYING, false, 2) && isFlying) {
                     // Took off
-                    stateManager.setState(DjiDroneState.FLYING, true);
-                    dispatch(DjiDroneEvent.TAKE_OFF);
+                    stateManager.setState(DjiDroneState.AIRCRAFT_FLYING, true);
+                    dispatch(DjiDroneEvent.AIRCRAFT_TAKE_OFF);
                     stateChanged = true;
-                } else if (stateManager.isInState(DjiDroneState.FLYING, true, 2) && !isFlying) {
+                } else if (stateManager.isInState(DjiDroneState.AIRCRAFT_FLYING, true, 2) && !isFlying) {
                     // Landed
-                    stateManager.setState(DjiDroneState.FLYING, false);
-                    dispatch(DjiDroneEvent.LAND);
+                    stateManager.setState(DjiDroneState.AIRCRAFT_FLYING, false);
+                    dispatch(DjiDroneEvent.AIRCRAFT_LAND);
                     stateChanged = true;
                 }
 
                 // Velocities
-                if (stateManager.setState(DjiDroneState.VELOCITY_X, djiFlightControllerCurrentState.getVelocityX())) {
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_VELOCITY_X, djiFlightControllerCurrentState.getVelocityX())) {
                     stateChanged = true;
                 }
-                if (stateManager.setState(DjiDroneState.VELOCITY_Y, djiFlightControllerCurrentState.getVelocityY())) {
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_VELOCITY_Y, djiFlightControllerCurrentState.getVelocityY())) {
                     stateChanged = true;
                 }
-                if (stateManager.setState(DjiDroneState.VELOCITY_Z, djiFlightControllerCurrentState.getVelocityZ())) {
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_VELOCITY_Z, djiFlightControllerCurrentState.getVelocityZ())) {
                     stateChanged = true;
                 }
 
                 // Other status
-                if (stateManager.setState(DjiDroneState.FAIL_SAFE, djiFlightControllerCurrentState.isFailsafe())) {
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_FAIL_SAFE, djiFlightControllerCurrentState.isFailsafe())) {
                     stateChanged = true;
                 }
-                if (stateManager.setState(DjiDroneState.RETURNING_HOME, djiFlightControllerCurrentState.isGoingHome())) {
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_RETURNING_HOME, djiFlightControllerCurrentState.isGoingHome())) {
                     stateChanged = true;
                 }
-                if (stateManager.setState(DjiDroneState.HOME_LOCATION, djiFlightControllerCurrentState.isHomePointSet())) {
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_HOME_LOCATION, djiFlightControllerCurrentState.isHomePointSet())) {
                     stateChanged = true;
                 }
-                if (stateManager.setState(DjiDroneState.IMU_PREHEATING, djiFlightControllerCurrentState.isIMUPreheating())) {
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_IMU_PREHEATING, djiFlightControllerCurrentState.isIMUPreheating())) {
                     stateChanged = true;
                 }
-                if (stateManager.setState(DjiDroneState.MULTI_MODE_OPEN, djiFlightControllerCurrentState.isMultipModeOpen())) {
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_MULTI_MODE_OPEN, djiFlightControllerCurrentState.isMultipModeOpen())) {
                     stateChanged = true;
                 }
-                if (stateManager.setState(DjiDroneState.LIMITED_HEIGHT_REACHED, djiFlightControllerCurrentState.isReachLimitedHeight())) {
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_LIMITED_HEIGHT_REACHED, djiFlightControllerCurrentState.isReachLimitedHeight())) {
                     stateChanged = true;
                 }
-                if (stateManager.setState(DjiDroneState.LIMITED_RADIUS_REACHED, djiFlightControllerCurrentState.isReachLimitedRadius())) {
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_LIMITED_RADIUS_REACHED, djiFlightControllerCurrentState.isReachLimitedRadius())) {
                     stateChanged = true;
                 }
-                if (stateManager.setState(DjiDroneState.ULTRASONIC, djiFlightControllerCurrentState.isUltrasonicBeingUsed())) {
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_ULTRASONIC, djiFlightControllerCurrentState.isUltrasonicBeingUsed())) {
                     stateChanged = true;
                 }
-                if (stateManager.setState(DjiDroneState.ULTRASONIC_ERROR, djiFlightControllerCurrentState.isUltrasonicError())) {
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_ULTRASONIC_ERROR, djiFlightControllerCurrentState.isUltrasonicError())) {
                     stateChanged = true;
                 }
-                if (stateManager.setState(DjiDroneState.VISION_SENSOR, djiFlightControllerCurrentState.isVisionSensorBeingUsed())) {
+                if (stateManager.setState(DjiDroneState.AIRCRAFT_VISION_SENSOR, djiFlightControllerCurrentState.isVisionSensorBeingUsed())) {
                     stateChanged = true;
                 }
 
                 // Only dispatch if state has been changed
                 if (stateChanged) {
-                    dispatch(DjiDroneEvent.FLIGHT_STATE_CHANGE);
+                    dispatch(DjiDroneEvent.AIRCRAFT_STATE_CHANGE);
                 }
             }
         });
