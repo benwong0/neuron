@@ -18,6 +18,7 @@ import dji.common.error.DJISDKError;
 import dji.common.flightcontroller.DJIFlightControllerCurrentState;
 import dji.common.flightcontroller.DJILocationCoordinate2D;
 import dji.common.flightcontroller.DJILocationCoordinate3D;
+import dji.common.gimbal.DJIGimbalState;
 import dji.common.util.DJICommonCallbacks;
 import dji.sdk.airlink.DJIAirLink;
 import dji.sdk.airlink.DJILBAirLink;
@@ -29,6 +30,7 @@ import dji.sdk.camera.DJICamera;
 import dji.sdk.camera.DJIMedia;
 import dji.sdk.flightcontroller.DJIFlightController;
 import dji.sdk.flightcontroller.DJIFlightControllerDelegate;
+import dji.sdk.gimbal.DJIGimbal;
 import dji.sdk.products.DJIAircraft;
 import dji.sdk.sdkmanager.DJISDKManager;
 
@@ -112,7 +114,6 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
 
     // endregion
 
-
     // region Remote controller listener
 
     private void setupControllerSignalListener(DJIBaseProduct djiBaseProduct) {
@@ -155,7 +156,6 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
 
     // endregion
 
-
     // region Diagnostic related listeners
 
     private void setupDiagnosticListener(DJIBaseProduct djiBaseProduct) {
@@ -185,6 +185,70 @@ public class DjiDroneDispatcher extends DroneDispatcher<DjiDroneEvent, DjiDroneS
 
                 if (stateChanged) {
                     stateManager.setState(DjiDroneState.AIRCRAFT_DIAGNOSTICS, list);
+                    dispatch(DjiDroneEvent.AIRCRAFT_DIAGNOSTIC);
+                }
+            }
+        });
+    }
+
+    // endregion
+
+    // region Gimbal listeners
+
+    private void setupGimbalStateListener(DJIBaseProduct djiBaseProduct) {
+        djiBaseProduct.getGimbal().setGimbalStateUpdateCallback(new DJIGimbal.GimbalStateUpdateCallback() {
+            @Override
+            public void onGimbalStateUpdate(DJIGimbal djiGimbal, DJIGimbalState djiGimbalState) {
+                DroneStateManager<DjiDroneState> stateManager = getDroneStateManager();
+                boolean stateChanged = false;
+
+                if (stateManager.setState(DjiDroneState.GIMBAL_CALIBRATING, djiGimbalState.isCalibrating())) {
+                    stateChanged = true;
+                }
+                if (stateManager.setState(DjiDroneState.GIMBAL_CALIBRATIION_SUCCESS, djiGimbalState.isCalibrationSuccess())) {
+                    stateChanged = true;
+                }
+                if (stateManager.setState(DjiDroneState.GIMBAL_ATTITUDE_RESET, djiGimbalState.isAttitudeReset())) {
+                    stateChanged = true;
+                }
+                if (stateManager.setState(DjiDroneState.GIMBAL_MOBILE_DEVICE_MOUNTED, djiGimbalState.isMobileDeviceMounted())) {
+                    stateChanged = true;
+                }
+                if (stateManager.setState(DjiDroneState.GIMBAL_MOTOR_OVERLOADED, djiGimbalState.isMotorOverloaded())) {
+                    stateChanged = true;
+                }
+                if (stateManager.setState(DjiDroneState.GIMBAL_PITCH_AT_STOP, djiGimbalState.isPitchAtStop())) {
+                    stateChanged = true;
+                }
+                if (stateManager.setState(DjiDroneState.GIMBAL_ROLL_AT_STOP, djiGimbalState.isRollAtStop())) {
+                    stateChanged = true;
+                }
+                if (stateManager.setState(DjiDroneState.GIMBAL_YAW_AT_STOP, djiGimbalState.isYawAtStop())) {
+                    stateChanged = true;
+                }
+                if (stateManager.setState(DjiDroneState.GIMBAL_TESTING_BALANCE, djiGimbalState.isTestingBalance())) {
+                    stateChanged = true;
+                }
+                if (stateManager.setState(DjiDroneState.GIMBAL_ATTITUDE_IN_DEGREES, djiGimbalState.getAttitudeInDegrees())) {
+                    stateChanged = true;
+                }
+                if (stateManager.setState(DjiDroneState.GIMBAL_BALANCE_STATE, djiGimbalState.getBalanceState())) {
+                    stateChanged = true;
+                }
+                if (stateManager.setState(DjiDroneState.GIMBAL_PITCH_TEST_RESULT, djiGimbalState.getPitchTestResult())) {
+                    stateChanged = true;
+                }
+                if (stateManager.setState(DjiDroneState.GIMBAL_ROLL_FINE_TUNE_IN_DEGREES, djiGimbalState.getRollFineTuneInDegrees())) {
+                    stateChanged = true;
+                }
+                if (stateManager.setState(DjiDroneState.GIMBAL_ROLL_TEST_RESULT, djiGimbalState.getRollTestResult())) {
+                    stateChanged = true;
+                }
+                if (stateManager.setState(DjiDroneState.GIMBAL_WORK_MODE, djiGimbalState.getWorkMode())) {
+                    stateChanged = true;
+                }
+
+                if (stateChanged) {
                     dispatch(DjiDroneEvent.AIRCRAFT_DIAGNOSTIC);
                 }
             }
