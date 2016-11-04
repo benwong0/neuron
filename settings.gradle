@@ -1,2 +1,2 @@
-include ':app', ':neuron'
+include ':neuron'
 include ':djisdk'
